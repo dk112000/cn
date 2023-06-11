@@ -1,0 +1,1246 @@
+Problem statement 1. Consider following Bank database schema and solve given queries:
+
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city, assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+
+
+------------------------------
+Q.1 Create above tables with appropriate constraints like primary key, foreign key, not null etc.
+with suitable data
+
+create table branch(
+branch_name varchar(10) primary key,
+branch_city varchar(20),
+assets number(10)
+);
+
+create table account(
+acc_no number(10) primary key,
+branch_name varchar2(20),
+balence number(10),
+foreign key(branch_name) references branch(branch_name)
+);
+
+create table customer(
+cust_name varchar(10),
+cust_street varchar(10),
+cust_city varchar(10),
+primary key (cust_name)
+);
+
+create table depositor(
+cust_name varchar(10),
+acc_no number(10),
+foreign key(cust_name) references customer(cust_name),
+foreign key(acc_no) references account(acc_no)
+);
+
+create table loan(
+loan_no number(10),
+branch_name varchar(10),
+amount number(10),
+primary key (loan_no),
+foreign key(branch_name) references branch(branch_name)
+);
+
+create table borrower(
+cust_name varchar(10),
+loan_no number(10),
+foreign key(loan_no) references loan(loan_no)
+);
+
+
+Insertion
+
+insert into branch(branch_name, branch_city, assets)
+values ('akurdi' , 'pune', 200000000);
+insert into branch(branch_name, branch_city, assets)
+values ('atigre' , 'pune', 400000000);
+
+insert into account (acc_no, branch_name , balence)
+values(1, 'akurdi', 1000000000);
+insert into account (acc_no, branch_name , balence)
+values(2, 'akurdi', 1000000002);
+insert into account (acc_no, branch_name , balence)
+values(3, 'atigre', 1000000003);
+
+insert into customer(cust_name,cust_street,cust_city)
+values('radhey', 'pune1', 'pune');
+insert into customer(cust_name,cust_street,cust_city)
+values('kedar', 'pune1', 'pune');
+insert into customer(cust_name,cust_street,cust_city)
+values('joy', 'pune1', 'pune');
+
+insert into depositor(cust_name,acc_no)
+values('radhey', 1);
+insert into depositor(cust_name,acc_no)
+values('kedar', 2);
+insert into depositor(cust_name,acc_no)
+values('joy', 3);
+
+insert into loan(loan_no, branch_name, amount)
+values (11 , 'akurdi' , 10001);
+insert into loan(loan_no, branch_name, amount)
+values (12 , 'akurdi' , 10002);
+
+insert into borrower (cust_name, loan_no)
+values('radhey', 11);
+insert into borrower (cust_name, loan_no)
+values('kedar', 12);
+
+
+drop table borrower;
+drop table loan;
+drop table depositor;
+drop table customer;
+drop table account;
+drop table branch;
+
+
+
+
+
+
+------------------------------------
+
+Q.2. Create synonym for customer table as cust.
+
+create synonym cust for customer;
+
+----------------------------------------------
+
+Q.3 Add customer phone number in Customer table.
+
+alter table customer
+add (phone number(10));
+
+
+-----------------------------------------
+
+Q.4 Delete phone number attribute from Customer table.
+
+alter table customer 
+drop column phone;
+
+-------------------------------------------------
+
+Q.5. Find the names of all branches in loan relation.
+
+select * from loan;
+
+-------------------------------------------------
+
+Q.6. Find all customers who have a loan from bank. Find their names,loan_no and loan amount.
+
+select * from loan 
+left  join  borrower 
+on loan.loan_no= borrower.loan_no;
+
+--------------------------------------------------
+
+Q.7. List all customers in alphabetical order who have loan from Akurdi branch.
+
+select cust_name from borrower 
+left  join  loan 
+on loan.loan_no= borrower.loan_no where loan.branch_name = 'akurdi' order by borrower.cust_name;
+
+--------------------------------------
+
+Q.8. Find all customers who have an account or loan or both at bank.
+
+select * from depositor
+full join borrower on borrower.cust_name=depositor.cust_name;
+
+-------------------------------------------------
+
+Q.9. Find average account balance at Akurdi branch.
+
+select avg(balence) from account where branch_name='akurdi';
+
+-----------------------------------------------------
+
+Q.10. Find no. of depositors at each branch.
+
+select branch_name,count(cust_name) from account,depositor where account.acc_no = depositor.acc_no group by branch_name;
+
+------------------------------------------------------------
+
+Q.11. Delete all tuples at every branch located in Nigdi.
+
+delete from borrower where loan_no in(select loan_no from loan where branch_name='akurdi');
+
+delete from loan where branch_name='akurdi';
+
+delete from depositor where acc_no in(select acc_no from account where branch_name='akurdi');
+
+delete  from account where branch_name='akurdi';
+
+delete  from branch where branch_name='akurdi';
+
+
+======================================================================================================================================================
+
+Problem statement 3. Consider following Bank database schema and solve given queries:
+
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city, assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+
+Q.1 Create above tables with appropriate constraints like primary key, foreign key constrains, not
+null etc. with suitable data
+
+
+Q.2. Modify “assets” attribute of branch table to “Property”
+
+alter table branch rename column assets to property;
+
+Q.3. Find all loan numbers for loans made at Akurdi Branch with loan amount > 12000.
+
+select loan_no from loan where branch_name='akurdi' and amount > 12000;
+
+Q.4. Find all customers who have both account and loan at bank.
+
+select * from depositor inner join borrower on borrower.cust_name=depositor.cust_name;
+
+Q.5. Find all customer who have account but no loan at the bank.
+
+select cust_name from customer minus select cust_name from borrower;
+
+Q.6. Find the average account balance at each branch
+
+select avg(property),branch_name from branch group by(branch_name);
+
+Q.7. Find the branches where average account balance > 12000.
+
+select branch_name, avg(balence) from account group by (branch_name) having avg(balence) > 12000;
+
+Q.8. Find number of tuples in customer relation.
+
+select count(*) as num_tup from customer;
+
+Q.9. Calculate total loan amount given by bank.
+
+select sum(amount) from loan;
+
+Q.10. Delete all loans with loan amount between 1300 and 1500.
+
+delete from loan where amount>1300 and amount<1500;
+
+Q.11. Create sequence roll_seq and use in student table for roll_no column.
+
+create sequence roll_seq  start with 1 increment by 1 NOCACHE;
+
+create table student(
+roll_no number(5),
+name varchar(10)
+);
+
+insert into student(roll_no, name)
+values(roll_seq.nextval, 'Radhey');
+
+
+======================================================================================================================================================
+
+
+Problem statement 2.
+a) Consider following database schema and solve given queries
+
+cust_mstr(cust_no,fname,lname)
+add_dets(code_no,add1,add2,state,city,pincode)
+
+1. Create above Tables with suitable data
+
+create table cust_mstr(
+cust_no number(5), 
+fname varchar(10),
+lname varchar(10)
+);
+
+create table add_dets(
+code_no number(10),
+add1 varchar(10),
+add2 varchar(10), 
+state varchar(10), 
+city varchar(10),
+pincode number(6)
+);
+
+insert into cust_mstr(cust_no, fname,lname)
+values(1, 'radhey' , 'kedar');
+insert into cust_mstr(cust_no, fname,lname)
+values(2, 'aneesh' , 'kanhere');
+insert into cust_mstr(cust_no, fname,lname)
+values(3, 'atharva' , 'khairmode');
+
+insert into add_dets(code_no,add1,add2,state,city,pincode)
+values (1, 'aran' , 'aran' ,'maha', 'pune', 12345);
+insert into add_dets(code_no,add1,add2,state,city,pincode)
+values (2, 'aran' , 'aran' ,'maha', 'pune', 12345);
+insert into add_dets(code_no,add1,add2,state,city,pincode)
+values (3, 'aran' , 'aran' ,'maha', 'pune', 12345);
+
+
+2. Retrieve the address of customer Fname as 'xyz' and Lname as 'pqr'
+
+select * from add_dets where code_no in (select cust_no from cust_mstr where fname='radhey' and lname = 'kedar');
+
+3. Create View on add_dets table by selecting any two columns and perform insert
+update delete operations
+
+create view v as select code_no, pincode from add_dets;
+
+insert into v values(5,123456);
+
+update v set code_no = 5, pincode = 000001 where code_no=2;
+
+b) Create following Tables
+emp_mstr(e_mpno,f_name,l_name,m_name,dept,desg,branch_no)
+branch_mstr(name,b_no)
+
+List the employee details along with branch names to which they belong
+
+
+
+======================================================================================================================================================
+
+
+Problem statement 4.
+a) Create following Tables with suitable data and solve following query
+
+cust_mstr(cust_no,fname,lname)
+acc_fd_cust_dets(codeno,acc_fd_no)
+fd_dets(fd_sr_no,amt)
+
+
+
+create table acc_fd_cust_dets(codeno number(5),acc_fd_no number(5));
+
+create table fd_dets(fd_sr_no number(5),amt number(5));
+
+insert into acc_fd_cust_dets(codeno,acc_fd_no)
+values(1,11);
+insert into acc_fd_cust_dets(codeno,acc_fd_no)
+values(2,12);
+
+insert into fd_dets(fd_sr_no,amt)
+values(11,1001);
+insert into fd_dets(fd_sr_no,amt)
+values(12,1002);
+
+List the customer holding fixed deposit of amount more than 5000
+
+select * from cust_mstr where cust_no in (select codeno from acc_fd_cust_dets where acc_fd_no in (select fd_sr_no from fd_dets where amt >1001));
+
+
+
+Problem statement 6.
+
+Q 1.Consider table Stud(Roll, Att,Status)
+Write a PL/SQL block for following requirement and handle the exceptions.
+Roll no. of student will be entered by user. Attendance of roll no. entered by user will be checked in
+Stud table. If attendance is less than 75% then display the message “Term not granted” and set the
+status in stud table as “D”. Otherwise display message “Term granted” and set the status in stud
+table as “ND”.
+
+DECLARE
+  v_roll_no Stud.Roll%TYPE;
+  v_attendance Stud.Att%TYPE;
+  v_status Stud.Status%TYPE;
+BEGIN
+  -- Accept roll number from the user
+  v_roll_no := &roll_no;
+
+  -- Retrieve attendance for the given roll number
+  SELECT Att, Status INTO v_attendance, v_status
+  FROM Stud
+  WHERE Roll = v_roll_no;
+
+  -- Check if attendance is less than 75%
+  IF v_attendance < 75 THEN
+    -- Update status as "D"
+    UPDATE Stud SET Status = 'D' WHERE Roll = v_roll_no;
+    DBMS_OUTPUT.PUT_LINE('Term not granted');
+  ELSE
+    -- Update status as "ND"
+    UPDATE Stud SET Status = 'ND' WHERE Roll = v_roll_no;
+    DBMS_OUTPUT.PUT_LINE('Term granted');
+  END IF;
+
+  -- Commit the changes
+  COMMIT;
+EXCEPTION
+  -- Handle exceptions
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Invalid roll number');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+
+Q 2.The bank manager has decided to activate all those accounts which were previously marked as
+inactive for performing no transaction in last 365 days. Write a PL/SQ block (using implicit cursor)
+to update the status of account, display an approximate message based on the no. of rows affected
+by the update. (Use of %FOUND, %NOTFOUND, %ROWCOUNT)
+
+DECLARE
+  v_inactive_count NUMBER := 0; -- Variable to keep track of the number of inactive accounts updated
+BEGIN
+  -- Update the status of inactive accounts
+  UPDATE Accounts
+  SET Status = 'Active'
+  WHERE LastTransactionDate <= SYSDATE - 365 AND Status = 'Inactive';
+
+  -- Check if any rows were affected by the update
+  IF SQL%FOUND THEN
+    v_inactive_count := SQL%ROWCOUNT;
+  END IF;
+
+  -- Display approximate message based on the number of rows affected
+  IF v_inactive_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('No inactive accounts found.');
+  ELSIF v_inactive_count = 1 THEN
+    DBMS_OUTPUT.PUT_LINE('1 inactive account has been activated.');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(v_inactive_count || ' inactive accounts have been activated.');
+  END IF;
+
+  -- Commit the changes
+  COMMIT;
+END;
+/
+-----------------------------------------------------------------------------------------------------
+Problem statement 7.
+
+Q 1. Write an SQL code block these raise a user defined exception where business rule is voilated.
+BR for client_master table specifies when the value of bal_due field is less than 0 handle the
+exception.
+
+DECLARE
+  v_bal_due client_master.bal_due%TYPE;
+
+  -- Define a user-defined exception
+  EXCEPTION
+    WHEN negative_balance_exception THEN
+      DBMS_OUTPUT.PUT_LINE('Business rule violation: Negative balance.');
+
+BEGIN
+  -- Retrieve the bal_due value for a specific client
+  SELECT bal_due INTO v_bal_due
+  FROM client_master
+  WHERE client_id = :client_id; -- Replace :client_id with the desired client ID
+
+  -- Check if the bal_due value is less than 0
+  IF v_bal_due < 0 THEN
+    -- Raise the user-defined exception
+    RAISE negative_balance_exception;
+  END IF;
+
+  -- Continue with other statements if the business rule is not violated
+  -- ...
+
+EXCEPTION
+  WHEN negative_balance_exception THEN
+    DBMS_OUTPUT.PUT_LINE('Business rule violation: Negative balance detected.');
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Client not found.');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+
+Q 2. Organization has decided to increase the salary of employees by 10% of existing salary, who
+are having salary less than average salary of organization, Whenever such salary updates takes
+place, a record for the same is maintained in the increment_salary table.
+EMP (E_no , Salary)
+increment_salary(E_no , Salary)
+
+-- Step 1: Calculate the average salary of the organization
+SELECT AVG(Salary) INTO avg_salary
+FROM EMP;
+
+-- Step 2: Update the salaries of eligible employees and insert records into increment_salary table
+UPDATE EMP
+SET Salary = Salary * 1.1
+WHERE Salary < avg_salary;
+
+-- Step 3: Insert records into increment_salary table
+INSERT INTO increment_salary (E_no, Salary)
+SELECT E_no, Salary
+FROM EMP
+WHERE Salary < avg_salary;
+
+Problem statement 8.
+
+Q 1.Borrower(Roll_no, Name, DateofIssue, NameofBook, Status)
+Fine(Roll_no,Date,Amt)
+1. Accept roll_no& name of book from user.
+2. Check the number of days (from date of issue), if days are between 15 to 30 then fine amount
+will be Rs 5per day.
+3. If no. of days>30, per day fine will be Rs 50 per day & for days less than 30, Rs. 5 per day.
+ After submitting the book, status will change from I to R
+4. If condition of fine is true, then details will be stored into fine table.
+5. Also handles the exception by named exception handler or user define exception handler.
+
+DECLARE
+  v_roll_no Borrower.Roll_no%TYPE := &roll_no; -- Accept roll_no from the user
+  v_name_of_book Borrower.NameofBook%TYPE := '&name_of_book'; -- Accept name_of_book from the user
+  v_date_of_issue Borrower.DateofIssue%TYPE;
+  v_fine_amt Fine.Amt%TYPE;
+  v_days NUMBER;
+  v_status Borrower.Status%TYPE;
+
+  -- User-defined exception
+  invalid_roll_no EXCEPTION;
+  PRAGMA EXCEPTION_INIT(invalid_roll_no, -1403);
+
+BEGIN
+  -- Retrieve the date of issue and status for the specified roll_no and name_of_book
+  SELECT DateofIssue, Status INTO v_date_of_issue, v_status
+  FROM Borrower
+  WHERE Roll_no = v_roll_no AND NameofBook = v_name_of_book;
+
+  -- Calculate the number of days from the date of issue
+  v_days := TRUNC(SYSDATE) - TRUNC(v_date_of_issue);
+
+  -- Check the number of days and calculate the fine amount accordingly
+  IF v_days > 30 THEN
+    v_fine_amt := 50 * (v_days - 30);
+  ELSIF v_days >= 15 THEN
+    v_fine_amt := 5 * (v_days - 15);
+  ELSE
+    v_fine_amt := 0;
+  END IF;
+
+  -- Update the status in the Borrower table
+  UPDATE Borrower
+  SET Status = 'R'
+  WHERE Roll_no = v_roll_no AND NameofBook = v_name_of_book;
+
+  -- Store the fine details in the Fine table if fine amount is greater than 0
+  IF v_fine_amt > 0 THEN
+    INSERT INTO Fine (Roll_no, Date, Amt)
+    VALUES (v_roll_no, SYSDATE, v_fine_amt);
+  END IF;
+
+  -- Commit the changes
+  COMMIT;
+
+  DBMS_OUTPUT.PUT_LINE('Fine amount: ' || v_fine_amt);
+
+EXCEPTION
+  WHEN invalid_roll_no THEN
+    DBMS_OUTPUT.PUT_LINE('Invalid roll number or name of book.');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+Problem statement 9.
+Q 1. Write PL/SQL block using explicit cursor for following requirements:
+College has decided to mark all those students detained (D) who are having attendance less than
+75%.
+Whenever such update takes place, a record for the same is maintained in the D_Stud table.
+create table stud21(roll number(4), att number(4), status varchar(1));
+create table d_stud(roll number(4), att number(4));
+
+DECLARE
+  CURSOR c_students IS
+    SELECT roll, att
+    FROM stud21
+    WHERE att < 75;
+
+  v_roll stud21.roll%TYPE;
+  v_att stud21.att%TYPE;
+
+BEGIN
+  -- Open the cursor
+  OPEN c_students;
+
+  -- Fetch the first row
+  FETCH c_students INTO v_roll, v_att;
+
+  -- Process each row in the cursor
+  WHILE c_students%FOUND LOOP
+    -- Update the status in stud21 table
+    UPDATE stud21
+    SET status = 'D'
+    WHERE roll = v_roll;
+
+    -- Insert a record in D_Stud table
+    INSERT INTO d_stud (roll, att)
+    VALUES (v_roll, v_att);
+
+    -- Fetch the next row
+    FETCH c_students INTO v_roll, v_att;
+  END LOOP;
+
+  -- Close the cursor
+  CLOSE c_students;
+
+  -- Commit the changes
+  COMMIT;
+
+  DBMS_OUTPUT.PUT_LINE('Detention process completed.');
+
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+Problem statement 10.
+
+Q 1.Consider table Stud(Roll, Att,Status)
+Write a PL/SQL block for following requirement and handle the exceptions.
+Roll no. of student will be entered by user. Attendance of roll no. entered by user will be checked in
+Stud table. If attendance is less than 75% then display the message “Term not granted” and set the
+status in stud table as “D”. Otherwise display message “Term granted” and set the status in stud
+table as “ND”.
+
+DECLARE
+  v_roll Stud.Roll%TYPE := &roll_no; -- Accept roll_no from the user
+
+  v_att Stud.Att%TYPE;
+  v_status Stud.Status%TYPE;
+
+BEGIN
+  -- Retrieve the attendance and status for the specified roll_no
+  SELECT Att, Status INTO v_att, v_status
+  FROM Stud
+  WHERE Roll = v_roll;
+
+  -- Check if the attendance is less than 75%
+  IF v_att < 75 THEN
+    -- Update the status as "D"
+    UPDATE Stud
+    SET Status = 'D'
+    WHERE Roll = v_roll;
+
+    DBMS_OUTPUT.PUT_LINE('Term not granted');
+  ELSE
+    -- Update the status as "ND"
+    UPDATE Stud
+    SET Status = 'ND'
+    WHERE Roll = v_roll;
+
+    DBMS_OUTPUT.PUT_LINE('Term granted');
+  END IF;
+
+  -- Commit the changes
+  COMMIT;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Invalid roll number.');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+
+Q 2.Write a update, delete trigger on clientmstr table. The System should keep track of the records
+that ARE BEING updated or deleted. The old value of updated or deleted records should be added
+in audit_trade table. (separate implementation using both row and statement triggers)
+
+CREATE OR REPLACE TRIGGER clientmstr_update_delete_row_trg
+AFTER UPDATE OR DELETE ON clientmstr
+FOR EACH ROW
+DECLARE
+  v_operation VARCHAR2(10);
+BEGIN
+  IF UPDATING THEN
+    v_operation := 'UPDATE';
+  ELSE
+    v_operation := 'DELETE';
+  END IF;
+
+  INSERT INTO audit_trade (operation, old_value)
+  VALUES (v_operation, :old.client_id || ', ' || :old.client_name || ', ' || :old.client_address);
+END;
+/
+
+
+-- doesent work
+--deleterow table use pl/sql block to delete
+-- Create the deleted_rows table
+
+CREATE GLOBAL TEMPORARY TABLE deleted_rows (
+  row_id ROWID
+) ON DELETE or update ROWS;
+
+CREATE OR REPLACE PROCEDURE delete_clientmstr_rows AS
+BEGIN
+  -- Perform the deletion
+  DELETE FROM clientmstr WHERE client_id = 1;
+
+  -- Perform any additional operations or logging here
+
+  COMMIT;
+EXCEPTION
+  -- Handle exceptions if needed
+  WHEN OTHERS THEN
+    ROLLBACK;
+    -- Perform error handling here
+END;
+/
+
+
+
+CREATE OR REPLACE TRIGGER clientmstr_update_delete_stmt_trg
+AFTER UPDATE OR DELETE ON clientmstr
+DECLARE
+  v_operation VARCHAR2(10);
+BEGIN
+  IF UPDATING THEN
+    v_operation := 'UPDATE';
+  ELSE
+    v_operation := 'DELETE';
+
+    FOR old_row IN (SELECT * FROM clientmstr WHERE ROWID IN (SELECT row_id FROM deleted_rows)) LOOP
+      INSERT INTO audit_trade (operation, old_value)
+      VALUES (v_operation, old_row.client_id || ', ' || old_row.client_name || ', ' || old_row.client_address);
+    END LOOP;
+
+    DELETE FROM deleted_rows;
+  END IF;
+END;
+/
+
+Problem statement 11.
+
+Q 1. Write a stored function in PL/SQL for given requirement and use the same in PL/SQL block.
+Account no. and branch name will be accepted from user. The same will be searched in table
+acct_details. If status of account is active then display appropriate message and also store the
+account details in active_acc_details table, otherwise display message on screen “account is
+inactive”.
+
+CREATE OR REPLACE FUNCTION check_account_status(
+  p_account_no IN acct_details.account_no%TYPE,
+  p_branch_name IN acct_details.branch_name%TYPE
+) RETURN VARCHAR2
+IS
+  v_status acct_details.status%TYPE;
+BEGIN
+  -- Search for the account details
+  SELECT status INTO v_status
+  FROM acct_details
+  WHERE account_no = p_account_no
+    AND branch_name = p_branch_name;
+
+  -- Check the account status and take appropriate action
+  IF v_status = 'active' THEN
+    -- Store the account details in active_acc_details table
+    INSERT INTO active_acc_details (account_no, branch_name)
+    VALUES (p_account_no, p_branch_name);
+
+    RETURN 'Account is active.';
+  ELSE
+    RETURN 'Account is inactive.';
+  END IF;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN 'Account not found.';
+  WHEN OTHERS THEN
+    RETURN 'An error occurred.';
+END;
+/
+
+--plsql block
+DECLARE
+  v_account_no acct_details.account_no%TYPE;
+  v_branch_name acct_details.branch_name%TYPE;
+  v_result VARCHAR2(100);
+BEGIN
+  -- Accept the account number and branch name from the user
+  v_account_no := &account_no;
+  v_branch_name := '&branch_name';
+
+  -- Call the stored function
+  v_result := check_account_status(v_account_no, v_branch_name);
+
+  -- Display the result
+  DBMS_OUTPUT.PUT_LINE(v_result);
+END;
+/
+
+Problem statement 12.
+
+Q 1. Write an SQL code block these raise a user defined exception where business rule is voilated.
+BR for client_master table specifies when the value of bal_due field is less than 0 handle the
+exception.
+
+DECLARE
+  -- Declare the user-defined exception
+  balance_due_exception EXCEPTION;
+  PRAGMA EXCEPTION_INIT(balance_due_exception, -20001);
+
+BEGIN
+  -- Perform your SQL operations here
+
+  -- Check the business rule and raise the user-defined exception if violated
+  IF bal_due < 0 THEN
+    RAISE balance_due_exception;
+  END IF;
+
+  -- Perform other operations here
+
+EXCEPTION
+  WHEN balance_due_exception THEN
+    -- Handle the user-defined exception
+    DBMS_OUTPUT.PUT_LINE('Balance due cannot be less than 0.');
+  WHEN OTHERS THEN
+    -- Handle other exceptions if needed
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+END;
+/
+
+Q 2.Write a before trigger for Insert, update event considering following requirement:
+Emp(e_no, e_name, salary)
+
+I) Trigger action should be initiated when salary is tried to be inserted is less than Rs. 50,000/-
+II) Trigger action should be initiated when salary is tried to be updated for value less than Rs.50,000/-
+
+Action should be rejection of update or Insert operation by displaying appropriate error message.
+Also the new values expected to be inserted will be stored in new table.
+Tracking(e_no, salary).
+
+CREATE OR REPLACE TRIGGER before_emp_salary_trigger
+BEFORE INSERT OR UPDATE OF salary ON Emp
+FOR EACH ROW
+DECLARE
+  -- Declare the user-defined exception
+  salary_exception EXCEPTION;
+  PRAGMA EXCEPTION_INIT(salary_exception, -20001);
+
+  v_new_salary NUMBER := :NEW.salary;
+BEGIN
+  IF v_new_salary < 50000 THEN
+    -- Raise the user-defined exception
+    RAISE salary_exception;
+
+  ELSE
+    -- Insert the new values into the Tracking table
+    INSERT INTO Tracking (e_no, salary)
+    VALUES (:NEW.e_no, v_new_salary);
+  END IF;
+
+EXCEPTION
+  WHEN salary_exception THEN
+    -- Handle the user-defined exception by displaying an appropriate error message
+    DBMS_OUTPUT.PUT_LINE('Salary cannot be less than Rs. 50,000.');
+
+  WHEN OTHERS THEN
+    -- Handle other exceptions if needed
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+END;
+/
+
+Problem statement 13.
+Q 1. . Write a PL/SQL stored Procedure for following requirements and call the procedure in appropriate
+PL/SQL block.
+Borrower(Rollin, Name, DateofIssue, NameofBook, Status)
+Fine(Roll_no,Date,Amt)
+ Accept roll_no& name of book from user.
+1. Check the number of days (from date of issue), if days are between 15 to 30 then fine amount will be Rs 5per day.
+2. If no. of days>30, per day fine will be Rs 50 per day & for days less than 30, Rs. 5 per day.
+3. After submitting the book, status will change from I to R.
+4. If condition of fine is true, then details will be stored into fine table.
+
+CREATE OR REPLACE PROCEDURE calculate_and_store_fine(
+  p_roll_no IN Borrower.Rollin%TYPE,
+  p_book_name IN Borrower.NameofBook%TYPE
+) AS
+  v_fine_amt NUMBER;
+  v_days_diff NUMBER;
+BEGIN
+  -- Calculate the number of days difference from the date of issue
+  SELECT TRUNC(SYSDATE) - TRUNC(DateofIssue)
+  INTO v_days_diff
+  FROM Borrower
+  WHERE Rollin = p_roll_no AND NameofBook = p_book_name;
+
+  -- Check the number of days and calculate the fine amount
+  IF v_days_diff > 30 THEN
+    v_fine_amt := 50 * v_days_diff;
+  ELSIF v_days_diff >= 15 THEN
+    v_fine_amt := 5 * v_days_diff;
+  ELSE
+    v_fine_amt := 0;
+  END IF;
+
+  -- Update the status to 'R' after submitting the book
+  UPDATE Borrower
+  SET Status = 'R'
+  WHERE Rollin = p_roll_no AND NameofBook = p_book_name;
+
+  -- Store the fine details in the Fine table
+  IF v_fine_amt > 0 THEN
+    INSERT INTO Fine (Roll_no, Date, Amt)
+    VALUES (p_roll_no, SYSDATE, v_fine_amt);
+  END IF;
+
+  -- Display the fine amount
+  DBMS_OUTPUT.PUT_LINE('Fine amount: ' || v_fine_amt);
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    -- Handle the case when the borrower or book is not found
+    DBMS_OUTPUT.PUT_LINE('Borrower or book not found.');
+  WHEN OTHERS THEN
+    -- Handle other exceptions if needed
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+END;
+/
+
+Problem statement 14.
+Q 1. Write a Stored Procedure namely proc_Grade for the categorization of student. If marks
+scored by students in examination is <=1500 and marks>=990 then student will be placed in
+distinction category if marks scored are between 989 and900 category is first class, if marks 899
+and 825 category is Higher Second Class.
+Write a PL/SQL block for using procedure created with above requirement.
+Stud_Marks(name, total_marks)
+Result(Roll,Name, Class)
+
+CREATE OR REPLACE PROCEDURE proc_Grade(
+  p_name IN Stud_Marks.name%TYPE,
+  p_total_marks IN Stud_Marks.total_marks%TYPE,
+  p_class OUT Result.Class%TYPE
+) AS
+BEGIN
+  IF p_total_marks <= 1500 AND p_total_marks >= 990 THEN
+    p_class := 'Distinction';
+  ELSIF p_total_marks >= 900 AND p_total_marks <= 989 THEN
+    p_class := 'First Class';
+  ELSIF p_total_marks >= 825 AND p_total_marks <= 899 THEN
+    p_class := 'Higher Second Class';
+  ELSE
+    p_class := 'Not Categorized';
+  END IF;
+END;
+/
+
+DECLARE
+  v_roll Stud_Marks.Roll%TYPE;
+  v_name Stud_Marks.Name%TYPE;
+  v_total_marks Stud_Marks.total_marks%TYPE;
+  v_class Result.Class%TYPE;
+BEGIN
+  -- Loop through each student in the Stud_Marks table
+  FOR rec IN (SELECT Roll, Name, total_marks FROM Stud_Marks) LOOP
+    v_roll := rec.Roll;
+    v_name := rec.Name;
+    v_total_marks := rec.total_marks;
+
+    -- Call the proc_Grade procedure to categorize the student
+    proc_Grade(v_name, v_total_marks, v_class);
+
+    -- Insert the result into the Result table
+    INSERT INTO Result (Roll, Name, Class)
+    VALUES (v_roll, v_name, v_class);
+  END LOOP;
+
+  COMMIT;
+  DBMS_OUTPUT.PUT_LINE('Categorization completed successfully.');
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Handle exceptions if needed
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+Problem statements 17
+Write Pl/SQL code block that will accept account number from user , check if the users balance is less than
+the minimum balance , only deduct Rs.100/- from the balance .
+
+DECLARE
+  v_account_number NUMBER;
+  v_balance NUMBER;
+  v_minimum_balance NUMBER := 1000; -- Assuming minimum balance is Rs.1000/-
+
+  -- Exception declaration for insufficient balance
+  insufficient_balance EXCEPTION;
+  PRAGMA EXCEPTION_INIT(insufficient_balance, -20001);
+
+BEGIN
+  -- Accept account number from the user
+  v_account_number := &account_number;
+
+  -- Retrieve the balance for the specified account
+  SELECT balance INTO v_balance
+  FROM accounts
+  WHERE account_number = v_account_number;
+
+  -- Check if the balance is less than the minimum balance
+  IF v_balance < v_minimum_balance THEN
+    -- Deduct Rs.100/- from the balance
+    v_balance := v_balance - 100;
+
+    -- Update the balance in the accounts table
+    UPDATE accounts
+    SET balance = v_balance
+    WHERE account_number = v_account_number;
+
+    -- Display success message
+    DBMS_OUTPUT.PUT_LINE('Rs.100/- deducted from the account balance.');
+
+  ELSE
+    -- Raise an exception for insufficient balance
+    RAISE insufficient_balance;
+  END IF;
+
+EXCEPTION
+  WHEN insufficient_balance THEN
+    -- Display error message for insufficient balance
+    DBMS_OUTPUT.PUT_LINE('Insufficient balance. Cannot deduct Rs.100/-.');
+
+  WHEN OTHERS THEN
+    -- Display generic error message
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+
+END;
+/
+
+Problem statements 18
+Write Pl/SQL code block for inverting number 1234 to 4321.
+
+DECLARE
+  v_number NUMBER := 1234; -- Replace with the desired number
+
+  v_inverted_number NUMBER := 0;
+  v_remainder NUMBER;
+
+BEGIN
+  WHILE v_number > 0 LOOP
+    v_remainder := v_number MOD 10;
+    v_inverted_number := (v_inverted_number * 10) + v_remainder;
+    v_number := FLOOR(v_number / 10);
+  END LOOP;
+
+  -- Display the inverted number
+  DBMS_OUTPUT.PUT_LINE('Inverted Number: ' || v_inverted_number);
+
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Display generic error message
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+
+END;
+/
+
+Problem statements 19
+The bank manager has decided to mark all those accounts as inactive (I) on which there are no
+transactions performed in last 365 days. Whenever any such update takes place a record for the
+same is maintained in the INACT_MASTER_TABLE comprising of the account number, the
+opening date and type of account. Write PL/SQL code block to do the same(cursor for loop)
+
+DECLARE
+  CURSOR c_accounts IS
+    SELECT account_number, opening_date, account_type
+    FROM ACCOUNTS
+    WHERE last_transaction_date < SYSDATE - 365;
+
+BEGIN
+  FOR rec IN c_accounts LOOP
+    -- Mark the account as inactive (I) in the ACCOUNTS table
+    UPDATE ACCOUNTS
+    SET account_status = 'I'
+    WHERE account_number = rec.account_number;
+
+    -- Insert a record into the INACT_MASTER_TABLE
+    INSERT INTO INACT_MASTER_TABLE (account_number, opening_date, account_type)
+    VALUES (rec.account_number, rec.opening_date, rec.account_type);
+
+    DBMS_OUTPUT.PUT_LINE('Account marked as inactive: ' || rec.account_number);
+  END LOOP;
+
+  -- Display success message
+  DBMS_OUTPUT.PUT_LINE('Accounts marked as inactive and records inserted in INACT_MASTER_TABLE successfully.');
+
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Display generic error message
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+
+END;
+/
+
+
+Problem statements 20
+Write PL/SQL code block that will merge the data available in the newly created table
+NEW_BRANCHES with the data available in the table BRANCH_MASTER. If the data in the first
+table already exists in the second table then data should be skipped.(parameterized cursor)
+
+DECLARE
+  CURSOR c_branches IS
+    SELECT *
+    FROM NEW_BRANCHES;
+
+  v_branch_id NUMBER;
+  v_branch_name VARCHAR2(100);
+  v_branch_location VARCHAR2(100);
+
+BEGIN
+  FOR rec IN c_branches LOOP
+    -- Check if the record already exists in BRANCH_MASTER
+    SELECT branch_id
+    INTO v_branch_id
+    FROM BRANCH_MASTER
+    WHERE branch_id = rec.branch_id;
+
+    -- If the record does not exist, insert it into BRANCH_MASTER
+    IF v_branch_id IS NULL THEN
+      v_branch_name := rec.branch_name;
+      v_branch_location := rec.branch_location;
+
+      INSERT INTO BRANCH_MASTER (branch_id, branch_name, branch_location)
+      VALUES (rec.branch_id, v_branch_name, v_branch_location);
+
+      DBMS_OUTPUT.PUT_LINE('Record inserted: ' || rec.branch_id);
+    ELSE
+      DBMS_OUTPUT.PUT_LINE('Record skipped: ' || rec.branch_id);
+    END IF;
+  END LOOP;
+
+  -- Display success message
+  DBMS_OUTPUT.PUT_LINE('Data merged successfully.');
+
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Display generic error message
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+
+END;
+/
+
+
+Problem statements 21
+Write PL/SQL code block such that depending upon user supplied account number, the customer to
+whom account belongs , the introducer of that account are inserted into
+ACCOUNT_MASTER_INFO table .If the user enters an account number that is not in the
+ACCOUNT_MASTER table, then the PL/SQL block must display appropriate error
+message(Exception Handling)
+
+DECLARE
+  v_account_number NUMBER := &account_number; -- Accept account number from user
+  v_customer_name VARCHAR2(100);
+  v_introducer_name VARCHAR2(100);
+
+  -- Exception declaration for invalid account number
+  invalid_account EXCEPTION;
+  PRAGMA EXCEPTION_INIT(invalid_account, -20001);
+
+BEGIN
+  -- Retrieve customer and introducer information based on the account number
+  SELECT customer_name, introducer_name
+  INTO v_customer_name, v_introducer_name
+  FROM ACCOUNT_MASTER
+  WHERE account_number = v_account_number;
+
+  -- Insert customer and introducer information into ACCOUNT_MASTER_INFO table
+  INSERT INTO ACCOUNT_MASTER_INFO (account_number, customer_name, introducer_name)
+  VALUES (v_account_number, v_customer_name, v_introducer_name);
+
+  -- Display success message
+  DBMS_OUTPUT.PUT_LINE('Account Master Info inserted successfully.');
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    -- Display error message for invalid account number
+    DBMS_OUTPUT.PUT_LINE('Invalid account number. Account does not exist.');
+
+  WHEN OTHERS THEN
+    -- Display generic error message
+    DBMS_OUTPUT.PUT_LINE('An error occurred.');
+
+END;
+/
+
+
+
+Problem statements 22
+A stored function is created to perform the ACCOUNT_NO check operation .F_checkAccNO() is
+the name of function which accept a variable ACCOUNT_NO and returns the value to host
+environment The value changes from 0(if ACCOUNT_NO does not exist) to 1(if ACCOUNT_NO
+exist) depending on the records retrieved.
+
+CREATE OR REPLACE FUNCTION F_checkAccNO(p_ACCOUNT_NO NUMBER) RETURN NUMBER AS
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count
+  FROM YOUR_TABLE -- Replace YOUR_TABLE with the actual name of your table
+  WHERE ACCOUNT_NO = p_ACCOUNT_NO;
+  
+  IF v_count > 0 THEN
+    RETURN 1; -- ACCOUNT_NO exists
+  ELSE
+    RETURN 0; -- ACCOUNT_NO does not exist
+  END IF;
+END;
+/
+
+
+Problem statements 23
+create a row level trigger for the CUSTOMERS table that would fire for INSERT or UPDATE or DELETE
+operations performed on the CUSTOMERS table. This trigger will display the salary difference between the old
+values and new values
+
+-- block sal increse by 500
+declare 
+	v_rows number;
+begin
+	update emp set sal=sal+500;
+	v_rows := SQL%rowcount;
+	dbms_output.put_line('no of affected rows: '||v_rows);
+end;
+/
+
+//salry difference trigger
+CREATE OR REPLACE TRIGGER sal_diff
+AFTER INSERT OR UPDATE OR DELETE ON emp
+FOR EACH ROW
+DECLARE
+  v_diff NUMBER;
+BEGIN
+  IF INSERTING THEN
+    v_diff := :new.sal;
+  ELSIF UPDATING THEN
+    v_diff := :new.sal - :old.sal;
+  ELSIF DELETING THEN
+    v_diff := :old.sal;
+  END IF;
+  
+  DBMS_OUTPUT.PUT_LINE('Salary difference: ' || v_diff);
+END;
+/
+
+Problem statements 24
+Write PL/SQL block to update the Customer table and increase the salary of each customer by 500
+and use the SQL%ROWCOUNTattribute to determine the number of rows affected.
+
+DECLARE
+  rows_affected NUMBER;
+BEGIN
+  UPDATE Customer
+  SET salary = salary + 500;
+  
+  rows_affected := SQL%ROWCOUNT;
+  
+  DBMS_OUTPUT.PUT_LINE('Number of rows updated: ' || rows_affected);
+  
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    DBMS_OUTPUT.PUT_LINE('Error occurred: ' || SQLERRM);
+END;
+/
+
+
