@@ -1243,4 +1243,407 @@ EXCEPTION
 END;
 /
 
+-- Q.2 Create synonym for customer table as cust
+CREATE SYNONYM cust FOR customer;
 
+-- Q.3 Add customer phone number in Customer table
+ALTER TABLE customer ADD COLUMN phone_number VARCHAR(20);
+
+-- Q.4 Delete phone number attribute from Customer table
+ALTER TABLE customer DROP COLUMN phone_number;
+
+-- Q.5 Find the names of all branches in loan relation
+SELECT DISTINCT branch_name FROM Loan;
+
+-- Q.6 Find all customers who have a loan from the bank. Find their names, loan_no, and loan amount.
+SELECT c.cust_name, l.loan_no, l.amount
+FROM customer c
+JOIN Borrower b ON c.cust_name = b.cust_name
+JOIN Loan l ON b.loan_no = l.loan_no;
+
+-- Q.7 List all customers in alphabetical order who have a loan from Akurdi branch.
+SELECT c.cust_name, b.branch_name
+FROM customer c
+JOIN Borrower br ON c.cust_name = br.cust_name
+JOIN Loan l ON br.loan_no = l.loan_no
+JOIN branch b ON l.branch_name = b.branch_name
+WHERE b.branch_city = 'Akurdi'
+ORDER BY c.cust_name;
+
+-- Q.8 Find all customers who have an account or loan or both at the bank.
+SELECT c.cust_name
+FROM customer c
+LEFT JOIN Depositor d ON c.cust_name = d.cust_name
+LEFT JOIN Borrower b ON c.cust_name = b.cust_name
+WHERE d.cust_name IS NOT NULL OR b.cust_name IS NOT NULL;
+
+-- Q.9 Find the average account balance at Akurdi branch.
+SELECT AVG(a.balance)
+FROM Account a
+JOIN branch b ON a.branch_name = b.branch_name
+WHERE b.branch_city = 'Akurdi';
+
+-- Q.10 Find the number of depositors at each branch.
+SELECT b.branch_name, COUNT(d.cust_name) AS num_depositors
+FROM branch b
+LEFT JOIN Account a ON b.branch_name = a.branch_name
+LEFT JOIN Depositor d ON a.Acc_no = d.acc_no
+GROUP BY b.branch_name;
+
+-- Q.11 Delete all tuples at every branch located in Nigdi.
+DELETE FROM branch
+WHERE branch_city = 'Nigdi';
+
+Q2
+
+a) Consider the following database schema and solve the given queries:
+
+```sql
+-- 1. Create above Tables with suitable data
+CREATE TABLE cust_mstr (
+  cust_no INT PRIMARY KEY,
+  fname VARCHAR(50),
+  lname VARCHAR(50)
+);
+
+CREATE TABLE add_dets (
+  code_no INT PRIMARY KEY,
+  add1 VARCHAR(100),
+  add2 VARCHAR(100),
+  state VARCHAR(50),
+  city VARCHAR(50),
+  pincode VARCHAR(10)
+);
+
+-- Inserting sample data
+INSERT INTO cust_mstr (cust_no, fname, lname) VALUES
+  (1, 'John', 'Doe'),
+  (2, 'Alice', 'Smith'),
+  (3, 'Bob', 'Johnson');
+
+INSERT INTO add_dets (code_no, add1, add2, state, city, pincode) VALUES
+  (1, 'Street 1', 'Apt 101', 'State A', 'City A', '12345'),
+  (2, 'Street 2', 'Apt 202', 'State B', 'City B', '67890'),
+  (3, 'Street 3', 'Apt 303', 'State C', 'City C', '45678');
+```
+
+2. Retrieve the address of the customer with Fname as 'xyz' and Lname as 'pqr':
+
+```sql
+SELECT a.add1, a.add2, a.city, a.state, a.pincode
+FROM cust_mstr c
+JOIN add_dets a ON c.cust_no = a.code_no
+WHERE c.fname = 'xyz' AND c.lname = 'pqr';
+```
+
+3. Create a view on the add_dets table by selecting any two columns and perform insert, update, delete operations:
+
+```sql
+-- Create view on add_dets table
+CREATE VIEW add_dets_view AS
+SELECT code_no, add1
+FROM add_dets;
+
+-- Insert operation on the view
+INSERT INTO add_dets_view (code_no, add1) VALUES (4, 'Street 4');
+
+-- Update operation on the view
+UPDATE add_dets_view
+SET add1 = 'Updated Street'
+WHERE code_no = 4;
+
+-- Delete operation on the view
+DELETE FROM add_dets_view WHERE code_no = 4;
+```
+
+b) Create the following tables:
+
+```sql
+-- Create Tables
+CREATE TABLE emp_mstr (
+  e_mpno INT PRIMARY KEY,
+  f_name VARCHAR(50),
+  l_name VARCHAR(50),
+  m_name VARCHAR(50),
+  dept VARCHAR(50),
+  desg VARCHAR(50),
+  branch_no INT
+);
+
+CREATE TABLE branch_mstr (
+  name VARCHAR(50),
+  b_no INT PRIMARY KEY
+);
+
+-- List the employee details along with branch names to which they belong
+SELECT e.e_mpno, e.f_name, e.l_name, e.m_name, e.dept, e.desg, b.name AS branch_name
+FROM emp_mstr e
+JOIN branch_mstr b ON e.branch_no = b.b_no;
+```
+
+Problem statement 3: Consider the following Bank database schema and solve the given queries:
+
+```sql
+-- Q.1 Create tables with appropriate constraints like primary key, foreign key constraints, not null, etc. with suitable data
+CREATE TABLE Account (
+  Acc_no INT PRIMARY KEY,
+  branch_name VARCHAR(50),
+  balance DECIMAL(10, 2),
+  FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+CREATE TABLE branch (
+  branch_name VARCHAR(50) PRIMARY KEY,
+  branch_city VARCHAR(50),
+  assets DECIMAL(10, 2)
+);
+
+CREATE TABLE customer (
+  cust_name VARCHAR(50) PRIMARY KEY
+
+,
+  cust_street VARCHAR(50),
+  cust_city VARCHAR(50)
+);
+
+CREATE TABLE Depositor (
+  cust_name VARCHAR(50),
+  acc_no INT,
+  PRIMARY KEY (cust_name, acc_no),
+  FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+  FOREIGN KEY (acc_no) REFERENCES Account(Acc_no)
+);
+
+CREATE TABLE Loan (
+  loan_no INT PRIMARY KEY,
+  branch_name VARCHAR(50),
+  amount DECIMAL(10, 2),
+  FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+CREATE TABLE Borrower (
+  cust_name VARCHAR(50),
+  loan_no INT,
+  PRIMARY KEY (cust_name, loan_no),
+  FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+  FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+);
+
+-- Inserting sample data
+INSERT INTO Account (Acc_no, branch_name, balance) VALUES
+  (1, 'Branch A', 1000.00),
+  (2, 'Branch B', 2000.00),
+  (3, 'Branch C', 3000.00);
+
+INSERT INTO branch (branch_name, branch_city, assets) VALUES
+  ('Branch A', 'City A', 50000.00),
+  ('Branch B', 'City B', 75000.00),
+  ('Branch C', 'City C', 100000.00);
+
+INSERT INTO customer (cust_name, cust_street, cust_city) VALUES
+  ('John', 'Street 1', 'City A'),
+  ('Alice', 'Street 2', 'City B'),
+  ('Bob', 'Street 3', 'City C');
+
+INSERT INTO Depositor (cust_name, acc_no) VALUES
+  ('John', 1),
+  ('Alice', 2),
+  ('Bob', 3);
+
+INSERT INTO Loan (loan_no, branch_name, amount) VALUES
+  (1001, 'Branch A', 5000.00),
+  (1002, 'Branch B', 7000.00),
+  (1003, 'Branch C', 9000.00);
+
+INSERT INTO Borrower (cust_name, loan_no) VALUES
+  ('John', 1001),
+  ('Alice', 1002),
+  ('Bob', 1003);
+```
+
+Q.2. Modify "assets" attribute of the branch table to "Property".
+
+```sql
+-- Modify "assets" attribute to "Property"
+ALTER TABLE branch RENAME COLUMN assets TO property;
+```
+
+Q.3. Find all loan numbers for loans made at Akurdi Branch with a loan amount greater than 12000.
+
+```sql
+SELECT loan_no
+FROM Loan
+WHERE branch_name = 'Akurdi' AND amount > 12000;
+```
+
+Q.4. Find all customers who have both an account and a loan at the bank.
+
+```sql
+SELECT c.cust_name
+FROM customer c
+JOIN Depositor d ON c.cust_name = d.cust_name
+JOIN Account a ON d.acc_no = a.Acc_no
+JOIN Borrower b ON c.cust_name = b.cust_name;
+```
+
+Q.5. Find all customers who have an account but no loan at the bank.
+
+```sql
+SELECT c.cust_name
+FROM customer c
+JOIN Depositor d ON c.cust_name = d.cust_name
+LEFT JOIN Borrower b ON c.cust_name = b.cust_name
+WHERE b.cust_name IS NULL;
+```
+
+Q.6. Find the average account balance at each branch.
+
+```sql
+SELECT branch_name, AVG(balance) AS avg_balance
+FROM Account
+GROUP BY branch_name;
+```
+
+Q.7. Find the branches where the average account balance is greater than
+
+ 12000.
+
+```sql
+SELECT branch_name
+FROM Account
+GROUP BY branch_name
+HAVING AVG(balance) > 12000;
+```
+
+Q.8. Find the number of tuples in the customer relation.
+
+```sql
+SELECT COUNT(*) AS num_tuples
+FROM customer;
+```
+
+Q.9. Calculate the total loan amount given by the bank.
+
+```sql
+SELECT SUM(amount) AS total_loan_amount
+FROM Loan;
+```
+
+Q.10. Delete all loans with a loan amount between 1300 and 1500.
+
+```sql
+DELETE FROM Loan
+WHERE amount BETWEEN 1300 AND 1500;
+```
+
+Q.11. Create a sequence roll_seq and use it in the student table for the roll_no column.
+
+```sql
+-- Create sequence roll_seq
+CREATE SEQUENCE roll_seq;
+
+-- Add roll_no column to the student table
+ALTER TABLE student ADD roll_no INT;
+
+-- Set roll_no values using the sequence
+UPDATE student SET roll_no = NEXT VALUE FOR roll_seq;
+```
+q4
+a) Create the following tables with suitable data and solve the given query:
+
+```sql
+-- Create Tables
+CREATE TABLE cust_mstr (
+  custno INT PRIMARY KEY,
+  fname VARCHAR(50),
+  lname VARCHAR(50)
+);
+
+CREATE TABLE acc_fd_cust_dets (
+  codeno INT PRIMARY KEY,
+  acc_fd_no INT
+);
+
+CREATE TABLE fd_dets (
+  fd_sr_no INT PRIMARY KEY,
+  amt DECIMAL(10, 2)
+);
+
+-- Insert sample data
+INSERT INTO cust_mstr (custno, fname, lname) VALUES
+  (1, 'John', 'Doe'),
+  (2, 'Alice', 'Smith'),
+  (3, 'Bob', 'Johnson');
+
+INSERT INTO acc_fd_cust_dets (codeno, acc_fd_no) VALUES
+  (1, 1001),
+  (2, 1002),
+  (3, 1003);
+
+INSERT INTO fd_dets (fd_sr_no, amt) VALUES
+  (1001, 4000.00),
+  (1002, 6000.00),
+  (1003, 8000.00);
+
+-- List the customers holding fixed deposits of amount more than 5000
+SELECT c.fname, c.lname
+FROM cust_mstr c
+JOIN acc_fd_cust_dets a ON c.custno = a.codeno
+JOIN fd_dets f ON a.acc_fd_no = f.fd_sr_no
+WHERE f.amt > 5000;
+```
+
+b) Create a view on the `cust_mstr` and `acc_fd_cust_dets` tables by selecting any one column from each table and perform insert, update, delete operations:
+
+```sql
+-- Create view on cust_mstr and acc_fd_cust_dets tables
+CREATE VIEW cust_fd_view AS
+SELECT c.fname, a.acc_fd_no
+FROM cust_mstr c
+JOIN acc_fd_cust_dets a ON c.custno = a.codeno;
+
+-- Insert operation on the view
+INSERT INTO cust_fd_view (fname, acc_fd_no) VALUES ('Jane', 1004);
+
+-- Update operation on the view
+UPDATE cust_fd_view
+SET fname = 'Updated Name'
+WHERE acc_fd_no = 1004;
+
+-- Delete operation on the view
+DELETE FROM cust_fd_view WHERE acc_fd_no = 1004;
+```
+
+c) Create the following tables with suitable data and solve the given query:
+
+```sql
+-- Create Tables
+CREATE TABLE emp_mstr (
+  emp_no INT PRIMARY KEY,
+  f_name VARCHAR(50),
+  l_name VARCHAR(50),
+  m_name VARCHAR(50),
+  dept VARCHAR(50)
+);
+
+CREATE TABLE cntc_dets (
+  code_no INT PRIMARY KEY,
+  cntc_type VARCHAR(50),
+  cntc_data VARCHAR(50)
+);
+
+-- Insert sample data
+INSERT INTO emp_mstr (emp_no, f_name, l_name, m_name, dept) VALUES
+  (1, 'John', 'Doe', 'M', 'Sales'),
+  (2, 'Alice', 'Smith', 'N', 'Marketing'),
+  (3, 'Bob', 'Johnson', 'P', 'Finance');
+
+INSERT INTO cntc_dets (code_no, cntc_type, cntc_data) VALUES
+  (1, 'Email', 'john@example.com'),
+  (2, 'Phone', '1234567890'),
+  (3, 'Email', 'alice@example.com');
+
+-- List the employee details along with contact details using left outer join & right join
+SELECT e.emp_no, e.f_name, e.l_name, e.m_name, e.dept, c.cntc_type, c.cntc_data
+FROM emp_mstr e
+LEFT JOIN cntc
